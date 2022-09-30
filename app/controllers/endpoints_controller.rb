@@ -32,8 +32,10 @@ class EndpointsController < ApplicationController
     verb = request.request_method
     puts path, verb
     record = Endpoint.where(verb: verb, path: path).first
-    raise ActiveRecord::RecordNotFound unless record
-
+    if record.nil?
+      render_error("Requested page #{verb} #{path} does not exist", 404)
+      return
+    end
     render json: record.response['body'], status: record.response['code']
   end
 
@@ -50,7 +52,6 @@ class EndpointsController < ApplicationController
     return if Endpoint.verbs.keys.include?(verb)
 
     raise ActionController::ParameterMissing, "verb should be one of #{Endpoint.verbs.keys.to_s}"
-    # TODO path regex
   end
 
 end
